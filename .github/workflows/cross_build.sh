@@ -93,20 +93,16 @@ SELF_DIR="$(dirname "$(readlink -f "${0}")")"
 mkdir -p "/usr/src"
 
 retry() {
-  # 最多重试5次
-  try=5
-  # 每次重试延时 1 分钟
-  sleep_time=60
   for i in $(seq ${try}); do
-    echo "executing with retry: $@" >&2
+    echo "重试执行： $@" >&2
     if eval "$@"; then
       return 0
     else
-      echo "execute '$@' failed, tries: ${i}" >&2
+      echo "执行 '$@' 失败，尝试：${i}" >&2
       sleep ${sleep_time}
     fi
   done
-  echo "execute '$@' failed" >&2
+  echo "执行 '$@' 失败" >&2
   return 1
 }
 
@@ -394,6 +390,3 @@ echo "TARGET_ARCH=${TARGET_ARCH}" >>$GITHUB_ENV
 zip -j9v "${SELF_DIR}/qbittorrent-nox_${CROSS_HOST}_static.zip" /tmp/${TARGET_ARCH}-qbittorrent-nox*
 ls -la /tmp/*qbittorrent-nox
 ls -la ${SELF_DIR}/
-ls /etc/*release
-cat /etc/*release
-rm -f /etc/*release
