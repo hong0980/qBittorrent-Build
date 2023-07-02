@@ -113,7 +113,7 @@ retry() {
 prepare_cmake() {
   echo -e "\n\n开始安装 cmake"
   if ! which cmake &>/dev/null; then
-    cmake_latest_ver="$(retry curl -ksSL --compressed https://cmake.org/download/ \| grep "'Latest Release'" \| sed -r "'s/.*Latest Release\s*\((.+)\).*/\1/'" \| head -1)"
+    cmake_latest_ver="$(retry curl -ksSL --compressed https://cmake.org/download/ \| grep -oP "'(?<=Latest Release \()[0-9.]+(?=\))'" \| head -1)"
     cmake_binary_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-linux-x86_64.tar.gz"
     cmake_sha256_url="https://github.com/Kitware/CMake/releases/download/v${cmake_latest_ver}/cmake-${cmake_latest_ver}-SHA-256.txt"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
@@ -137,7 +137,7 @@ prepare_cmake() {
 prepare_ninja() {
   echo -e "\n\n开始安装 ninja"
   if ! which ninja &>/dev/null; then
-    ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep "'The last Ninja release is'" \| sed -r "'s@.*<b>(.+)</b>.*@\1@'" \| head -1)"
+    ninja_ver="$(retry curl -ksSL --compressed https://ninja-build.org/ \| grep -oP "'(?<=The last Ninja release is <b>)v[^<]+'" \| head -1)"
     ninja_binary_url="https://github.com/ninja-build/ninja/releases/download/${ninja_ver}/ninja-linux.zip"
     if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
       ninja_binary_url="https://ghproxy.com/${ninja_binary_url}"
@@ -173,7 +173,7 @@ prepare_zlib() {
     # 修复 mingw build sharedlibdir 丢失问题
     sed -i 's@^sharedlibdir=.*@sharedlibdir=${libdir}@' "${CROSS_PREFIX}/lib/pkgconfig/zlib.pc"
   else
-    zlib_ver="$(retry curl -ksSL --compressed https://zlib.net/ \| grep -i "'<FONT.*FONT>'" \| sed -r "'s/.*zlib\s*([^<]+).*/\1/'" \| head -1)"
+    zlib_ver="$(retry curl -ksSL --compressed https://zlib.net/ \| grep -oP "'(?<=<B> zlib )[^</B></FONT>]+'" \| head -1)"
     echo "zlib 版本 ${zlib_ver}"
     if [ ! -f "/usr/src/zlib-${zlib_ver}/.unpack_ok" ]; then
       mkdir -p "/usr/src/zlib-${zlib_ver}"
@@ -244,8 +244,8 @@ prepare_boost() {
 
 prepare_qt() {
   echo -e "\n\n开始编译 qt"
-  qt_major_ver="$(retry curl -ksSL --compressed https://download.qt.io/official_releases/qt/ \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
-  qt_ver="$(retry curl -ksSL --compressed https://download.qt.io/official_releases/qt/${qt_major_ver}/ \| sed -nr "'s@.*href=\"([0-9]+(\.[0-9]+)*)/\".*@\1@p'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
+  qt_major_ver="$(retry curl -ksSL --compressed https://download.qt.io/official_releases/qt/ \| grep -oP "'(?<=href=\")[0-9.]+(?=/)'" \| grep \"^${QT_VER_PREFIX}\" \| head -1)"
+  qt_ver="$(retry curl -ksSL --compressed https://download.qt.io/official_releases/qt/${qt_major_ver}/ \| grep -oP "'(?<=href=\")[0-9.]+(?=/)'" \| head -1)"
   echo "qt 版本: ${qt_ver}"
   mkdir -p "/usr/src/qtbase-${qt_ver}" "/usr/src/qttools-${qt_ver}"
   if [ ! -f "/usr/src/qt-host/${qt_ver}/gcc_64/bin/qt.conf" ]; then
@@ -394,3 +394,6 @@ echo "TARGET_ARCH=${TARGET_ARCH}" >>$GITHUB_ENV
 zip -j9v "${SELF_DIR}/qbittorrent-nox_${CROSS_HOST}_static.zip" /tmp/${TARGET_ARCH}-qbittorrent-nox*
 ls -la /tmp/*qbittorrent-nox
 ls -la ${SELF_DIR}/
+ls /etc/*release
+cat /etc/*release
+rm -f /etc/*release
