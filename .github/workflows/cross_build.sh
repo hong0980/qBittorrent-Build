@@ -10,11 +10,6 @@
 
 set -o pipefail
 
-# 匹配 qt 版本前缀。例如 5 --> 5.15.2、5.12 --> 5.12.10
-# export QT_VER_PREFIX="6"
-# export LIBTORRENT_BRANCH="1.2.19"
-# export QBITTORRENT_BRANCH="4.5.4"
-
 # 用于本地构建的 Ubuntu 镜像
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
   source /etc/os-release
@@ -217,7 +212,7 @@ prepare_ssl() {
 
 prepare_boost() {
   echo -e "\n\n开始编译 boost"
-  boost_ver="$(retry curl -ksSL --compressed https://www.boost.org/users/download/ \| grep "'>Version\s*'" \| sed -r "'s/.*Version\s*([^<]+).*/\1/'" \| head -1)"
+  boost_ver="$(retry curl -ksSL --compressed https://www.boost.org/users/download/ \| grep -oP "'\"news-title\">Version \K[^<]+'" \| head -1)"
   echo "Boost 版本 ${boost_ver}"
   if [ ! -f "/usr/src/boost-${boost_ver}/.unpack_ok" ]; then
     boost_latest_url="https://sourceforge.net/projects/boost/files/boost/${boost_ver}/boost_${boost_ver//./_}.tar.bz2/download"

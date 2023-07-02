@@ -17,7 +17,7 @@ on:
 
       LIBTORRENT_BRANCH:
         description: 'libtorrent 版本：'
-        default: '1.2.9'
+        default: '1.2.19'
         type: number
         required: true
         options: [ '1.2.19', '2.0.9' ]
@@ -30,7 +30,7 @@ on:
 
       sleep_time:
         description: '每次下载错误时重试间隔：'
-        default: '30'
+        default: '20'
         type: number
         required: true
 
@@ -43,14 +43,14 @@ jobs:
     steps:
       - name: Set current date as env variable
         run: echo "NOW=$(date --gmt +0800)" >> $GITHUB_ENV
-        
-      - uses: dev-drprasad/delete-tag-and-release@v0.2.1
-        continue-on-error: true
-        with:
-          delete_release: true
-          tag_name: qbittorrent-nox
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - uses: dev-drprasad/delete-tag-and-release@v0.2.1
+      #   continue-on-error: true
+      #   with:
+      #     delete_release: true
+      #     tag_name: qbittorrent-nox
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Prerelease Tag
         continue-on-error: true
