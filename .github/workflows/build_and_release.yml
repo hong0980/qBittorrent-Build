@@ -61,7 +61,9 @@ jobs:
       - name: 交叉编译 qbittorrent-nox-static
         id: organize
         env:
-          CROSS_HOST: "${{ matrix.cross_host }}"
+          try: ${{github.event.inputs.try}}
+          CROSS_HOST: ${{ matrix.cross_host }}
+          sleep_time: ${{github.event.inputs.sleep_time}}
         run: |
           if [ "${GITHUB_EVENT_NAME}" = release ]; then
             export qBittorrent_VER="${GITHUB_REF#refs/*/}"
