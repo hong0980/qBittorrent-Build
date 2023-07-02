@@ -11,9 +11,9 @@
 set -o pipefail
 
 # 匹配 qt 版本前缀。例如 5 --> 5.15.2、5.12 --> 5.12.10
-export QT_VER_PREFIX="6"
-export LIBTORRENT_BRANCH="1.2.19"
-export QBITTORRENT_BRANCH="4.5.4"
+# export QT_VER_PREFIX="6"
+# export LIBTORRENT_BRANCH="1.2.19"
+# export QBITTORRENT_BRANCH="4.5.4"
 
 # 用于本地构建的 Ubuntu 镜像
 if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
@@ -94,15 +94,15 @@ mkdir -p "/usr/src"
 
 retry() {
   for i in $(seq ${try}); do
-    echo "重试执行： $@" >&2
+    echo "执行： $@" >&2
     if eval "$@"; then
       return 0
     else
-      echo "执行 '$@' 失败，尝试：${i}" >&2
+      echo "第 ${i} 次执行 '$@' 失败，${sleep_time} 秒后尝试：$((i + 1))次" >&2
       sleep ${sleep_time}
     fi
   done
-  echo "执行 '$@' 失败" >&2
+  echo "${try} 次执行 '$@' 失败，退出！" >&2
   return 1
 }
 

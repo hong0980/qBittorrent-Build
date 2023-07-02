@@ -2,14 +2,37 @@ name: 编译和发布 qBittorrent
 on:
   workflow_dispatch:
     inputs:
+      QBITTORRENT_BRANCH:
+        description: 'qBittorrent 版本'
+        default: '4.5.4'
+        type: number
+        required: true
+
+      QT_VER_PREFIX:
+        description: 'qt 版本：'
+        default: '6'
+        type: number
+        required: true
+        options: [ 5, 6 ]
+
+      LIBTORRENT_BRANCH:
+        description: 'libtorrent 版本：'
+        default: '1.2.9'
+        type: number
+        required: true
+        options: [ '1.2.19', '2.0.9' ]
+
       try:
         description: '下载错误重试次数：'
         default: '5'
         type: number
+        required: true
+
       sleep_time:
         description: '每次下载错误时重试间隔：'
         default: '30'
         type: number
+        required: true
 
 jobs:
 
@@ -23,7 +46,7 @@ jobs:
       - uses: dev-drprasad/delete-tag-and-release@v0.2.1
         with:
           delete_release: true
-          tag_name: continuous
+          tag_name: qbittorrent-nox
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Prerelease Tag
@@ -32,7 +55,7 @@ jobs:
         with:
           prerelease: true
           draft: false
-          tag_name: continuous
+          tag_name: qbittorrent-nox
           name: Continuous build
           body: |
             Building time: ${{ env.NOW }}
@@ -41,6 +64,13 @@ jobs:
   static-build:
     runs-on: ubuntu-latest
     container: "abcfy2/muslcc-toolchain-ubuntu:${{ matrix.cross_host }}"
+    env:
+      try: ${{github.event.inputs.try}}
+      CROSS_HOST: ${{ matrix.cross_host }}
+      sleep_time: ${{github.event.inputs.sleep_time}}
+      QT_VER_PREFIX: ${{github.event.inputs.QT_VER_PREFIX}}
+      LIBTORRENT_BRANCH: ${{github.event.inputs.LIBTORRENT_BRANCH}}
+      QBITTORRENT_BRANCH: ${{github.event.inputs.QBITTORRENT_BRANCH}}
     strategy:
       fail-fast: false
       matrix:
@@ -60,10 +90,6 @@ jobs:
 
       - name: 交叉编译 qbittorrent-nox-static
         id: organize
-        env:
-          try: ${{github.event.inputs.try}}
-          CROSS_HOST: ${{ matrix.cross_host }}
-          sleep_time: ${{github.event.inputs.sleep_time}}
         run: |
           if [ "${GITHUB_EVENT_NAME}" = release ]; then
             export qBittorrent_VER="${GITHUB_REF#refs/*/}"
@@ -78,7 +104,7 @@ jobs:
 
       - name: 上传 Github Assets
         continue-on-error: true
-        if: startsWith(github.ref, 'refs/tags/')
+        if: steps.organize.conclusion == 'success'
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
