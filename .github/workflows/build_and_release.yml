@@ -52,11 +52,12 @@ jobs:
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Prerelease Tag
+      - name: 创建标签
         continue-on-error: true
         id: create_prerelease_tag
         uses: softprops/action-gh-release@v1
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
           draft: false
           tag_name: qbittorrent-nox

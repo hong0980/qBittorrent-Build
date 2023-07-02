@@ -338,10 +338,8 @@ build_qbittorrent() {
   mkdir -p "qbittorrent-${QBITTORRENT_BRANCH}"
   retry curl -kL "${qbittorrent_download_url}" \| tar -zxf - --strip-components=1 -C "qbittorrent-${QBITTORRENT_BRANCH}"
   cd "qbittorrent-${QBITTORRENT_BRANCH}"
-  if [ "${QBITTORRENT_BRANCH}" == "4.5.2" ]; then
-    curl -sO https://raw.githubusercontent.com/hong0980/qbittorrent-nox-static/master/patches/qbittorrent/${QBITTORRENT_BRANCH}/qbittorrent.patch && \
-    patch -p1 < qbittorrent.patch
-  fi
+  retry curl -sO https://raw.githubusercontent.com/hong0980/qbittorrent-nox-static/master/patches/qbittorrent/${QBITTORRENT_BRANCH}/qbittorrent.patch
+  [ $(echo $?) -eq 0 ] && patch -p1 < qbittorrent.patch
   cmake \
     -B build \
     -G "Ninja" \
