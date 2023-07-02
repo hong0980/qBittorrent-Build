@@ -1,0 +1,54 @@
+name: 编译和发布 qBittorrent
+on:
+  workflow_dispatch:
+
+jobs:
+  cross-compile:
+    runs-on: ubuntu-latest
+    container: "abcfy2/muslcc-toolchain-ubuntu:${{ matrix.cross_host }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        cross_host:
+          - arm-linux-musleabi
+          # - arm-linux-musleabihf
+          - aarch64-linux-musl
+          - mips-linux-musl
+          - mipsel-linux-musl
+          - mips64-linux-musl
+          - mips64el-linux-musl
+          - x86_64-linux-musl
+          - i686-linux-musl
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # - uses: actions/cache@v3
+      #   with:
+      #     path: |
+      #       /usr/src/
+      #       /var/cache/apt/
+      #     key: cross-build-dependencies-cache-${{ matrix.cross_host }}-${{ github.sha }}
+      #     restore-keys: |
+      #       cross-build-dependencies-cache-${{ matrix.cross_host }}-
+
+      - name: 交叉编译 qbittorrent-nox-static
+        id: organize
+        env:
+          CROSS_HOST: "${{ matrix.cross_host }}"
+        run: .github/workflows/cross_build.sh
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: qbittorrent-nox_${{ matrix.cross_host }}_static
+          path: /tmp/*qbittorrent-nox*
+
+      - name: 上传 Github Assets
+        continue-on-error: true
+        if: steps.organize.conclusion == 'success'
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: /tmp/${{env.TARGET_ARCH}}-qbittorrent-nox
+          tag_name: qbittorrent-nox
+          name: qbittorrent-nox
