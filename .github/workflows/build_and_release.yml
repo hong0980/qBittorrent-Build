@@ -43,13 +43,17 @@ jobs:
     steps:
       - name: Set current date as env variable
         run: echo "NOW=$(date --gmt +0800)" >> $GITHUB_ENV
+        
       - uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        continue-on-error: true
         with:
           delete_release: true
           tag_name: qbittorrent-nox
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Prerelease Tag
+        continue-on-error: true
         id: create_prerelease_tag
         uses: softprops/action-gh-release@v1
         with:
